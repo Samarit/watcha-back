@@ -14,7 +14,7 @@ var host = "localhost:5555"
 const (
 	hostdb   = "localhost"
 	portdb   = 5432
-	user     = "pguser"
+	user     = "postgres"
 	password = "pgpass"
 	dbname   = "postgres"
 )
@@ -35,7 +35,7 @@ func main() {
 
 	rows, err := db.Query("select * from users;")
 	if err != nil {
-		log.Println("SELECT ERR")
+		log.Println("SELECT ERR: ", err)
 	}
 	defer rows.Close()
 
