@@ -1,12 +1,14 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 	"log"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
+	"github.com/watcha-back/db"
+	// "database/sql"
+	// _ "github.com/lib/pq"
 )
 
 var host = "localhost:5555"
@@ -28,27 +30,33 @@ type User struct {
 func main() {
 	s := gin.Default()
 
-	db, err := initDB()
+	connString := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		hostdb, portdb, user, password, dbname)
+
+	db, err := db.NewClient(context.TODO(), connString)
 	if err != nil {
 		log.Println("DB ERR")
 	}
 
-	rows, err := db.Query("select * from users;")
-	if err != nil {
-		log.Println("SELECT ERR: ", err)
-	}
-	defer rows.Close()
+	db.GetUser(context.TODO())
 
-	user := User{}
+	// rows, err := db.Exec("select * from users;")
+	// if err != nil {
+	// 	log.Println("SELECT ERR: ", err)
+	// }
+	// defer rows.Close()
 
-	for rows.Next() {
-		err := rows.Scan(&user.id, &user.login, &user.password)
-		if err != nil {
-			log.Fatal(err)
-		}
+	// user := User{}
 
-		fmt.Println(user)
-	}
+	// for rows.Next() {
+	// 	err := rows.Scan(&user.id, &user.login, &user.password)
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+
+	// 	fmt.Println(user)
+	// }
 
 	s.GET("/api", func(ctx *gin.Context) {
 		fmt.Println("GET /")
@@ -57,28 +65,4 @@ func main() {
 
 	s.Run(host)
 
-}
-
-func initDB() (*sql.DB, error) {
-	connStr := fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable",
-		hostdb, portdb, user, password, dbname)
-
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		panic(err)
-	}
-
-	err = db.Ping()
-	if err != nil {
-		panic(err)
-	}
-
-	return db, nil
-}
-
-func getUser() User {
-	user := User{}
-
-	return user
 }
