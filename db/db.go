@@ -6,13 +6,14 @@ import (
 	"log"
 	"sync"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/lib/pq"
 )
 
 type Client interface {
 	Exec(ctx context.Context, sql string, args ...interface{}) (pgconn.CommandTag, error)
+	Query(ctx context.Context, sql string) (pgx.Rows, error)
 }
 
 type postgres struct {
@@ -35,15 +36,11 @@ func NewClient(ctx context.Context, connString string) (*postgres, error) {
 	return instance, nil
 }
 
-func (pg *postgres) GetUser(ctx context.Context) error {
-	query := `SELECT * FROM USERS;`
-
-	result, err := pg.db.Exec(ctx, query)
+func (pg *postgres) Query(ctx context.Context, sql string) (pgx.Rows, error) {
+	rows, err := pg.db.Query(ctx, sql)
 	if err != nil {
-		fmt.Println("QUERY ERROR")
+		return nil, fmt.Errorf(err.Error())
 	}
 
-	fmt.Println(result.String())
-
-	return nil
+	return rows, nil
 }
