@@ -27,6 +27,8 @@ type User struct {
 	password string
 }
 
+var testUser User
+
 func main() {
 	s := gin.Default()
 
@@ -39,7 +41,19 @@ func main() {
 		log.Println("DB ERR")
 	}
 
-	db.GetUser(context.TODO())
+	rows, err := db.Query(context.TODO(), "select * from users where id = 1;")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	for rows.Next() {
+		err := rows.Scan(&testUser.id, &testUser.login, &testUser.password)
+		if err != nil {
+			fmt.Println("Scan err: ", err)
+		}
+	}
+
+	fmt.Println("TEST USER: ", testUser)
 
 	// rows, err := db.Exec("select * from users;")
 	// if err != nil {
